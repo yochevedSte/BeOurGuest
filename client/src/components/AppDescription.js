@@ -18,8 +18,8 @@ const styles = theme => ({
   description: {
     position: "absolute",
     top:0,
-    marginTop:"10%",
-    padding: 10,
+    marginTop:"8%",
+    padding: 40,
     left:"50%",
     justifyContent: "center",
     color: "white",
@@ -31,7 +31,7 @@ const styles = theme => ({
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
     width: "100%",
-    height: "92vh",
+    height: "90.2vh",
     clipPath: "polygon(0 0, 21% 0, 56% 100%, 0% 100%)",
 
 
