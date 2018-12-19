@@ -252,4 +252,6 @@
         text-align: left;
     }
 
-    
+    .modal-open {
+        padding-right: 0px !important;
+    }

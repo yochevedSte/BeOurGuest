@@ -35,6 +35,7 @@ const styles = theme => ({
   },
   table: {
     minWidth: 1000,
+   
   },
   iconButton: {
     height: 35,
@@ -46,6 +47,10 @@ const styles = theme => ({
     height: 20,
     width: 20,
 
+  },
+  guestsContainer: {
+    height: "90vh",
+    overflowY: "auto",
   },
 
 });
@@ -168,7 +173,7 @@ class GuestInfo extends Component {
     let guests = this.props.store.user.events[this.props.store.eventIndex].guests;
     return (
 
-      <div className="GuestsTabContainer">
+      <div className={classes.guestsContainer}>
         <div className="addGuest" style={{ textAlign: 'center' }}>
           <CreateGuest
             openModalCreate={this.openModalCreate}
