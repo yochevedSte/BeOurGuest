@@ -9,11 +9,12 @@ import { observer, inject } from 'mobx-react';
 import GuestInfo from './GuestInfo';
 import TableManager from './TableManager';
 import InvitationManager from './InvitationManager';
+import axios from 'axios';
 
 //tabs desgin
 function TabContainer(props) {
   return (
-    <Typography component="div" style={{ padding:  '10px 24px 10px 24px' }}>
+    <Typography component="div" style={{ padding: '10px 24px 10px 24px' }}>
       {props.children}
     </Typography>
   );
@@ -46,16 +47,13 @@ const styles = theme => ({
 @inject("store")
 @observer
 class EventManager extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
-    if(props.store.eventIndex === null){
-      let eventId = props.match.params.eventId;
-      let eventIndex = props.store.user.events.findIndex(event => event._id === eventId);
-      this.props.store.thisEventIndex(eventIndex);
 
-    }
-    
+
+
   }
+
   state = {
     value: 'one',
   };
@@ -69,6 +67,40 @@ class EventManager extends React.Component {
   render() {
     const { classes, match } = this.props;
     const { value } = this.state;
+    console.log("RENDER");
+    console.log("EventIndex = " + this.props.store.eventIndex);
+    //console.log(this.props.store.user);
+    console.log(this.props.store.user.events);
+    let props = this.props;
+    if (props.store.eventIndex === null) {
+      let eventId = props.match.params.eventId;
+      console.log(eventId);
+      console.log("USER:")
+      console.log(props.store.user);
+      console.log("EVENTS:")
+      console.log(props.store.user.events);
+      let eventIndex = props.store.user.events.findIndex(event => event._id === eventId);
+      props.store.thisEventIndex(eventIndex);
+      console.log("EventIndex = " + props.store.eventIndex);
+     // console.log(props.store.user);
+    }
+    if (!props.store.user.userLog) {
+      let userId = props.match.params.userId;
+      axios.get('/beOurGuest/login/' + userId)
+        .then(response => {
+          // console.log(response.data)
+          if (response.data !== "") {
+            // console.log("user login  " + JSON.stringify(response.data))
+            props.store.updateUser(response.data);
+            
+            //  this.props.history.push("/" + this.props.store.user._Id + "/events/");
+
+          } else {
+            console.log("ERROR");
+          }
+
+        }).catch(function (error) { console.log(error); });
+    }
 
     return (
       <div className={classes.root}>

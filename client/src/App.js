@@ -32,7 +32,10 @@ class App extends Component {
     this.state = {
       rsvpfunc: false,
       // endpoint: "http://127.0.0.1:3001"
-      endpoint: "https://beourguest.herokuapp.com"
+      endpoint: "https://beourguest.herokuapp.com",
+      loading: false,
+
+      rendered: false
     };
   }
 
@@ -40,40 +43,35 @@ class App extends Component {
   updateTablesInDb = () => { };
 
   @action
-  componentWillMount() {
+  componentDidMount() {
+    if (this.state.rendered === false)
+      this.setState({ rendered: true })
     let user = JSON.parse(localStorage.getItem("beOurGuestUser"));
-    console.log("WILL MOUNT");
-    console.log(user);
+    console.log("APP - componentDidMount()");
     let eventIndex = JSON.parse(localStorage.getItem("beOurGuestEventIndex"));
-
-    if (user !== null) {
-      // console.log(user.username);
+    if (user) {
+      this.setState({ loading: true });
       axios
         .post("/beOurGuest/login", { name: user.username, pass: user.password })
         .then(response => {
           if (response.data !== "") {
             this.props.store.updateUser(response.data);
             if (eventIndex !== null) {
-              // console.log("eventIndex   ===" + eventIndex)
               this.props.store.thisEventIndex(eventIndex);
+
             }
+
+
           } else {
-            // console.log("no user Account ")
+             console.log("no user Account ")
           }
+          this.setState({ loading: false });
         })
         .catch(function (error) {
           console.log(error);
         });
     }
   }
-
-  onDragStart = result => {
-    console.log("start");
-  };
-
-  onDragUpdate = result => {
-    console.log("update");
-  };
 
   ChangeToRsvpPage = e => {
     this.setState({ rsvpfunc: true });
@@ -83,11 +81,10 @@ class App extends Component {
     for (let index = 0; index < events.length; index++) {
       //get event index
       if (events[index]._id == obj.eventId) {
-        // console.log("event index : " + index)
         for (let i_g = 0; i_g < events[index].guests.length; i_g++) {
           // get gest indes
           if (events[index].guests[i_g]._id == obj.guestId) {
-            console.log("guest index : " + i_g);
+            
             this.props.store.realTimeRsvp(
               index,
               i_g,
@@ -104,69 +101,63 @@ class App extends Component {
     const store = this.props.store;
     const socket = socketIOClient(this.state.endpoint);
     socket.on("backRsvp", obj => {
-      // console.log(JSON.stringify(obj))
       this.updetGuset(obj);
     });
 
-    console.log(store.user.userLog);
-    console.log(store.eventIndex);
+    let userLocalStorage = JSON.parse(localStorage.getItem("beOurGuestUser"));
+   
+    //data of user/eventIndex is still loading
+    if (this.state.loading)
+      return null;
+      //first render with no user in localstorage (even if not root page)
+    if (!this.state.rendered && !store.user.userLog && !userLocalStorage)
+      return <Redirect to="/" />;
+
+      //not first render but localStorage user is still not updated to store
+    if (!store.user.userLog && userLocalStorage)
+      return null;
+
+      //By now, if there is no localStroge, or if we have completed the retrieval of all the data to the store,
+      // we get here
     return (
       <MuiThemeProvider theme={theme}>
         <div className="App" >
           {!this.state.rsvpfunc && <Navbar />}
 
-            <div style={{
-              /*  position: "absolute",
-               top: 64,
-               bottom: 0,
-               left: 0,
-               height: "100%",
-               width: "100%", */
-              flex: " 1 1 auto",
-            }}>
-            {/*   {!this.state.rsvpfunc &&
-                store.eventIndex != null &&
-                  store.user.userLog && store.currentPage === "" && <Redirect to={"/" + store.user._Id + "/event/"
-                    + store.user.events[store.eventIndex]._id + "/"} />} */}
-           {/*    {store.user.userLog && !this.props.store.eventIndex &&  store.currentPage === "" && <Redirect to={"/user/" + store.user._Id} />} */}
-             {/*  { store.user.userLog && store.currentPage === "events"  && !this.state.rsvpfunc &&
-                store.eventIndex == null && <Redirect to={"/" + store.user._Id + "/events/"} />}
-              { store.user.userLog &&  store.currentPage === "categories" && store.eventIndex == null && !this.state.rsvpfunc &&
-              <Redirect to={"/" + store.user._Id + "/categories/"} />} */}
+          <div style={{
+            flex: " 1 1 auto",
+          }}>
+            
+            <Switch>
+              {
+                <Route exact path="/" component={() =>
+                  !store.user.userLog ? <AppDescription />
+                    : (store.eventIndex !== null ?
+                      <Redirect to={"/" + store.user._Id + "/event/" + store.user.events[store.eventIndex]._id + "/"} />
+                      : <Redirect to={"/" + store.user._Id + "/events/"} />)} />
+              }
 
 
+              <Route exact path="/:userId/events/" component={EventsPage} />
+              <Route exact path="/:userId/event/:eventId" component={EventManager} />
+
+              <Route exact path="/:userId/categories/" component={CategoryPage} />
 
 
-              <Switch>
-                {
-                  <Route exact path="/" component={() =>
-                   !store.user.userLog ? <AppDescription/>
-                    : (store.eventIndex ?
-                     <Redirect to={"/" + store.user._Id + "/event/"
-                    + store.user.events[store.eventIndex]._id + "/"} /> 
-                    :  <Redirect to={"/" + store.user._Id + "/events/"} />)} />
-                }
-
-               
-                <Route exact path="/:userId/events/" component={EventsPage} />
-                <Route exact path="/:userId/event/:eventId" component={EventManager} />
-
-                <Route exact path="/:userId/categories/" component={CategoryPage} />
-
-
-                <Route
-                  exact
-                  path="/beuorguest/rsvp/:vetId/:eventId/:guestId/"
-                  render={props => (
-                    <Rsvp {...props} ChangeToRsvpPage={this.ChangeToRsvpPage} />
-                  )}
-                />
-              </Switch>
-            </div>
+              <Route
+                exact
+                path="/beuorguest/rsvp/:vetId/:eventId/:guestId/"
+                render={props => (
+                  <Rsvp {...props} ChangeToRsvpPage={this.ChangeToRsvpPage} />
+                )}
+              />
+            </Switch>
+          </div>
         </div>
       </MuiThemeProvider>
     );
   }
+
 }
 
 export default withRouter(App);

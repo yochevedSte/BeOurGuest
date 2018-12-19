@@ -4,6 +4,9 @@ const router = express.Router();
 //modals   
 const User = require('./../Models/UserModel')
 
+const handleError = err => {
+    console.log(err);
+}
 
 //***************  User ***************//
 //new user
@@ -74,6 +77,42 @@ router.post('/beOurGuest/login', (req, res) => {
             else
                 res.send(user);
         });
+});
+
+router.get('/beOurGuest/login/:userId', (req, res) => {
+    let userId = req.params.userId;
+    User.findById(userId)
+        // populate('events').  categories
+        .populate({
+            path: 'events',
+            populate: {
+                path: 'invitations'
+            }
+        })
+        .populate({
+            path: 'events',
+            populate: {
+                path: 'tables',
+            }
+        })
+        .populate("categories")
+        .populate({
+            path: 'events',
+            populate: {
+                path: 'guests', populate: {
+                    path: 'globalGuest_id'
+                }
+            }
+        })
+        .populate('guests')
+        .exec((err, user) => {
+            if (err) return handleError(err);
+            if (user == null)
+                res.send(null)
+            else
+                res.send(user);
+        })
+        
 });
 
 module.exports = router;
