@@ -29,20 +29,38 @@ router.post('/beOurGuest/addNewCategory/:UserId', (req, res) => {
 });
 
 //remove category
-router.delete('/beOurGuest/removeCategory/:userId', (req, res) => {
-    // User.findById(req.params.userId)
-    // .then(user => {      
-    //     user.categories.findByIdAndRemove(req.body._id).then(removed => {
-    //             console.log("succesfully removed category");
-    //             res.send(removed);
-    //         }).catch(err => {
-    //             console.log(err);
-    //         });
-    //     res.send(category);
-    // }).catch(err => {
-    //     console.log(err);
-    // });
+router.delete('/beOurGuest/removeCategory/:userId/:categoryId', (req, res) => {
+    console.log("hey");
+    let categoryId = req.params.categoryId;
+    console.log(categoryId);
+    User.findById(req.params.userId)
+        .then(user => {
+            console.log(user);
+            return user.update({$pullAll: { categories: [categoryId ] } });
+        })
+        .then(removed => {
+            console.log("succesfully removed category from user");
+            return Category.findByIdAndRemove(categoryId);
+
+        }).then(cat => res.send(cat)).catch(err => {
+            console.log(err);
+        });
 });
+
+//edit category '/beOurGuest/editCategory/'
+router.post('/beOurGuest/editCategory/:userId', (req, res) => {
+    console.log("EDIT SERVER");
+    let body = req.body;
+    let category = {name: body.name, colorCode: body.colorCode};
+    console.log(category);
+    Category.findByIdAndUpdate(body._id ,{$set: category}, {new: true})
+        .then(cat => {
+            console.log(cat);
+            res.send(cat);
+        })
+        .catch(err => {console.log(err); res.send(err)});
+});
+
 
 
 module.exports = router;

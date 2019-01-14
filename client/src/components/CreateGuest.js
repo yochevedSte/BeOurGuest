@@ -215,7 +215,7 @@ class CreateGuest extends Component {
               </ModalFooter>
             </form>
             <div className={classes.addCategoryButton} >
-              <CreateCategory />
+              <CreateCategory type="create"/>
             </div>
           </Modal>
         }

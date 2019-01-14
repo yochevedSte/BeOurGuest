@@ -279,7 +279,7 @@ export class TableManager extends Component {
                       value={name.name}
                       style={{
                         fontWeight:
-                          this.state.name.indexOf(name) === -1
+                          this.state.name.indexOf(name.name) === -1
                             ? theme.typography.fontWeightRegular
                             : theme.typography.fontWeightMedium,
                       }}
