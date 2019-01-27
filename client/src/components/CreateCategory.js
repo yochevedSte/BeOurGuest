@@ -7,6 +7,7 @@ import { observer, inject } from 'mobx-react';
 import {
   Button,
   IconButton,
+  Icon,
   withStyles,
   TextField,
 } from '@material-ui/core';
@@ -24,9 +25,20 @@ const styles = theme => ({
     bottom: theme.spacing.unit * 10,
     right: theme.spacing.unit * 8,
     zIndex: 10,
-    boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.71), 0 6px 20px 0 #212121",
-    border:'solid',
+    border: 'solid',
   },
+
+  iconEditButton: {
+    height: 25,
+    width: 25,
+    position: "absolute",
+    left: 50,
+    top: 10,
+},
+icon: {
+  color: theme.palette.primary.main,
+  fontSize: 15
+},
 
 })
 
@@ -39,6 +51,7 @@ class CreateCategory extends Component {
     this.state = {
       modalCategory: false,
       name: "",
+      _id: "",
       colorCode: "#000000"
     };
   }
@@ -60,22 +73,46 @@ class CreateCategory extends Component {
     });
   }
 
+  initializeCategory = (category) => {
+    this.setState({
+      name: category.name,
+      colorCode: category.colorCode,
+      _id: category._id,
+    });
+  }
   handlerSaveCategory = (e) => {
     e.preventDefault();
     let userId = this.props.store.user._Id;
+    if(this.props.type === "create"){
     axios.post('/beOurGuest/addNewCategory/' + userId, this.state)
       .then(response => {
         // console.log(" new Category ->id  =" + response.data._id)
         this.props.store.addCategory(response.data)
       })
       .catch(err => console.log('Error: ', err));
+    }
+    else if(this.props.type === "edit"){
+      axios.post('/beOurGuest/editCategory/' + userId , this.state)
+      .then(response => {
+         console.log(response.data);
+        this.props.store.editCategory(response.data);
+      })
+      .catch(err => console.log('Error: ', err));
+    }
     this.handleClose();
   }
   render() {
     const { classes } = this.props;
     return (
       <div>
-        {this.props.store.myCategoryPage ?
+        {this.props.type === "edit" &&
+          <IconButton className={classes.iconEditButton}>
+            <Icon onClick={e => { 
+              this.initializeCategory(this.props.category);
+              this.toggleCategory();
+             }} className={classes.icon}>edit_icon</Icon>
+          </IconButton>}
+        {this.props.store.myCategoryPage && this.props.type === "create" ?
           <IconButton aria-label="add" style={{ left: "20px" }} className={classes.iconButton} onClick={this.toggleCategory} >
             <AddIcon className={classes.icon} />
           </IconButton> :
@@ -83,11 +120,11 @@ class CreateCategory extends Component {
           <Button variant="extendedFab" color="secondary" aria-label="Add" onClick={this.toggleCategory} className={classes.addButton}>
             <AddIcon className={classes.addIcon} />
             Add Category
-                    </Button>}
+             </Button>}
 
         <Modal style={{ width: "300px" }} isOpen={this.state.modalCategory} toggle={this.toggleCategory} className="CreateNewCategory">
           <form action="" onSubmit={this.handlerSaveCategory}>
-            <ModalHeader toggle={this.toggleCategory}>Create New Category</ModalHeader>
+            <ModalHeader toggle={this.toggleCategory}>Category</ModalHeader>
             <ModalBody>
               <TextField
                 required

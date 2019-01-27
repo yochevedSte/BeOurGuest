@@ -1,7 +1,7 @@
 {
   "name": "beourguest",
   "version": "1.0.0",
-  "description": "",
+  "description": "user = {\r     username: \"String\",\r     password: \"String\",\r     email: \"String\",\r     events: [\r         Title: \"String\",\r         Date: \"String\",\r         Location: \"String\",\r         maxGuests: \"Number\",\r         HostName: \"String\",\r         tables: [\r             title: \"String\",\r             maxGuests: \"Number\",\r             categories: [\r                 name: \"String\",\r                 colorCode: \"String\"\r             ],\r             guests: [\r                 globalGuest_id: {\r                     name: \"String\",\r                     email: \"String\",\r                     phone: \"String\",\r                 },\r                 comment: \"String\",\r                 numConfirmed: \"Number\",\r                 numUndecided: \"Number\",\r                 numNotComing: \"Number\"\r                        invitations: [\r                     invitationName: String,\r                     titleInput: String,\r                     textInput: String,\r                     background: String,\r                     titleColor: String,\r                     bodyColor: String,\r                     fontTitle: String,\r                     fontBody: String,\r                     whenEvent: String,\r                     whereEvent: String\r                 ],\r                 categories: [\r                     name: \"String\",\r                     colorCode: \"String\"\r                 ],\r             ]\r         ],\r         invitations: [\r             invitationName: String,\r             titleInput: String,\r             textInput: String,\r             background: String,\r             titleColor: String,\r             bodyColor: String,\r             fontTitle: String,\r             fontBody: String,\r             whenEvent: String,\r             whereEvent: String\r         ],\r         guests: [\r             globalGuest_id: {\r                 name: \"String\",\r                 email: \"String\",\r                 phone: \"String\",\r             },\r             invitations: [\r                 invitationName: String,\r                 titleInput: String,\r                 textInput: String,\r                 background: String,\r                 titleColor: String,\r                 bodyColor: String,\r                 fontTitle: String,\r                 fontBody: String,\r                 whenEvent: String,\r                 whereEvent: String\r             ],\r             categories: [\r                 name: \"String\",\r                 colorCode: \"String\"\r             ],\r             comment: \"String\",\r             numConfirmed: \"Number\",\r             numUndecided: \"Number\",\r             numNotComing: \"Number\"\r         ],\r     ],\r     guests: [\r         name: \"String\",\r         email: \"String\",\r         phone: \"String\",\r     ],\r     categories: [\r         name: \"String\",\r         colorCode: \"String\"\r     ]",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -34,5 +34,13 @@
     "socket.io-client": "^2.1.1",
     "typeface-roboto": "0.0.54"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yochevedSte/BeOurGuest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yochevedSte/BeOurGuest/issues"
+  },
+  "homepage": "https://github.com/yochevedSte/BeOurGuest#readme"
 }

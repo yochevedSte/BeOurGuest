@@ -223,10 +223,19 @@ class BeOurGuestStore {
     this.user.categories = listCategory;
     // console.log("New category " + newCategory._id);
   }
-  @action removeCategory = (index) => {
+  @action removeCategory = (id) => {
     let listCategory = this.user.categories.concat();
+    let index = listCategory.findIndex(item => item._id === id );
     listCategory.splice(index, 1);
     this.user.categories = listCategory;
+    // console.log("New category " + newCategory._id);
+  }
+
+  @action editCategory = (cat) => {
+
+    let index = this.user.categories.findIndex(item => item._id === cat._id );
+    this.user.categories[index] = {...cat};
+ 
     // console.log("New category " + newCategory._id);
   }
 
