@@ -12,6 +12,11 @@ import {
   InputLabel,
   FormHelperText,
   FormControl,
+  Input,
+  Chip,
+  MenuItem,
+  FormControlLabel,
+  Checkbox
 } from '@material-ui/core';
 import {
   withStyles,
@@ -35,7 +40,7 @@ const styles = theme => ({
   },
   table: {
     minWidth: 1000,
-   
+
   },
   iconButton: {
     height: 35,
@@ -53,7 +58,44 @@ const styles = theme => ({
     overflowY: "auto",
   },
 
+  formControl: {
+    margin: theme.spacing.unit,
+   
+    minHeight: 75,
+    flexDirection:'row',
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: theme.spacing.unit / 4,
+  },
+  formControlLabel: {
+    color: 'white',
+    paddingLeft: 30,
+  },
+  checkbox: {
+    width: 30,
+    marginLeft: 10
+  },
+  divider: {
+    marginBottom: 20
+  },
 });
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+
+  },
+};
+
 
 @inject("store")
 @observer
@@ -64,6 +106,9 @@ class GuestInfo extends Component {
       modalCreate: false,
       endpoint: "http://127.0.0.1:3001",
       modelEdit: false,
+      name: [],
+      checked: false,
+      viewedGuests: props.store.user.events[this.props.store.eventIndex].guests,
     };
   }
 
@@ -130,7 +175,7 @@ class GuestInfo extends Component {
     const GustId = this.props.store.user.events[this.props.store.eventIndex].guests[this.state.index_guest]._id;
     const GlobalGuestId = this.props.store.user.events[this.props.store.eventIndex].guests[this.state.index_guest].globalGuest_id._id;
 
-    debugger
+
     axios.post(
       '/beOurGuest/handleSaveChangeGuest/' + GustId + '/' + GlobalGuestId, objGuest)
       .then(response => {
@@ -167,12 +212,34 @@ class GuestInfo extends Component {
       category._id === guest.categories[0]);
     return categoryInfo.name;
   }
+
+  handleChangeCategory = event => {
+    this.setState({ name: event.target.value });
+  };
+
+  handleChangeCheckbox = name => event => {
+    this.setState({ [name]: event.target.checked });
+  };
+
   render() {
 
-    let { classes } = this.props;
-    let guests = this.props.store.user.events[this.props.store.eventIndex].guests;
-    return (
+    let { classes, theme } = this.props;
+    let guests = this.props.store.user.events[this.props.store.eventIndex].guests.slice().sort((a, b) => {
+      console.log(a);
+      console.log(b);
+      if(a.globalGuest_id.name < b.globalGuest_id.name) { return -1; }
+      if(a.globalGuest_id.name > b.globalGuest_id.name) { return 1; }
+      return 0;});
+    if (this.state.name.length != 0) {
+      guests = guests.filter(guest => { return this.state.name.indexOf(this.displayCategoryName(guest)) != -1; });
+    }
 
+    if(this.state.checked === true){
+      guests = guests.filter(guest => guest.numComing > 0);
+    }
+
+    let sumComing =0 , sumNotComing = 0, sumUndecided = 0;
+    return (
       <div className={classes.guestsContainer}>
         <div className="addGuest" style={{ textAlign: 'center' }}>
           <CreateGuest
@@ -181,6 +248,74 @@ class GuestInfo extends Component {
           />
         </div>
 
+        <FormControl className={classes.formControl}>
+          <InputLabel htmlFor="select-multiple-chip">Filter by Categories</InputLabel>
+          <Select
+            multiple
+            value={this.state.name}
+            onChange={this.handleChangeCategory}
+            input={<Input id="select-multiple-chip" />}
+            renderValue={selected => (
+              <div className={classes.chips}>
+                {selected.map(value => (
+                  <Chip key={value} label={value} className={classes.chip} />
+                ))}
+              </div>
+            )}
+            MenuProps={MenuProps}
+            style={{width:300}}
+          >
+            {this.props.store.user.categories.map(name => {
+              return (
+                <MenuItem
+                  key={name._id}
+                  value={name.name}
+                  style={{
+                    fontWeight:
+                      this.state.name.indexOf(name.name) === -1
+                        ? 400
+                        : 600,
+                    backgroundColor:
+                      this.state.name.indexOf(name.name) === -1
+                        ? "white"
+                        : "lightgrey",
+
+                  }}
+                >
+                  {name.name}
+                </MenuItem>
+              )
+            })}
+          </Select>
+
+           <FormControlLabel
+                className={classes.formControlLabel}
+
+                control={
+                  <Checkbox
+                    checked={this.state.checked}
+                    onChange={this.handleChangeCheckbox('checked')}
+                    value="checked"
+                    className={classes.checkbox}
+                  />
+                }
+                label="Only view RSVP Guests"
+              />
+
+        </FormControl>
+        {/*  <FormControlLabel
+                className={classes.formControlLabel}
+
+                control={
+                  <Checkbox
+                    checked={this.state.checked}
+                    onChange={this.handleChangeCheckbox('checked')}
+                    value="checked"
+                    className={classes.checkbox}
+                  />
+                }
+                label="Only filter tables"
+              /> */}
         <Paper className={this.props.classes.root}>
           <Table className={this.props.classes.table}>
             <TableHead>
@@ -198,6 +333,9 @@ class GuestInfo extends Component {
             </TableHead>
             <TableBody>
               {guests.map((guest, index) => {
+                sumComing += guest.numComing;
+                sumNotComing +=  guest.numNotComing;
+                sumUndecided += guest.numInvited - guest.numComing - guest.numNotComing;
                 return (
                   <TableRow key={index}>
                     <TableCell component="th" scope="row">
@@ -222,6 +360,19 @@ class GuestInfo extends Component {
                   </TableRow>
                 );
               })}
+
+              <TableRow style={{paddingTop: 10, paddingBottom:10}} >
+                    <TableCell component="th" scope="row" style={{fontWeight: "bold"}}>
+                   TOTAL
+                    </TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell numeric style={{fontWeight: "bold"}}>{sumComing}</TableCell>
+                    <TableCell numeric style={{fontWeight: "bold"}}>{sumNotComing}</TableCell>
+                    <TableCell numeric style={{fontWeight: "bold"}}>{sumUndecided}</TableCell>
+                   
+                  </TableRow>
             </TableBody>
           </Table>
         </Paper>
@@ -283,7 +434,7 @@ class GuestInfo extends Component {
                       return <option key={item._id} value={item._id} data-name={item.name}>{item.name}</option>
                     })}
                   </Select>
-                  <CreateCategory />
+                  <CreateCategory type="create" />
                 </div>
                 <FormHelperText>Select category or create new</FormHelperText>
               </FormControl>

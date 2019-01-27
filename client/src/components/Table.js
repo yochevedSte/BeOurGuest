@@ -50,7 +50,7 @@ const styles = theme => ({
     backgroundColor: '#b9b9b9',
     
    // border-radius: 10px;
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.342), 0 6px 20px 0 #2121219c',
+    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.342), 0 6px 20px 0 #21212140',
   },
   tableHeader: {
     padding: 5,
